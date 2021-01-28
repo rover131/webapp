@@ -1,0 +1,38 @@
+<!docktype html>
+<html>
+    <head>
+        <title>{{ the_title }}</title>
+        <link rel="stylesheet" href="static/hf.css" />
+    </head>
+    <body>
+        
+        {% extends 'base.html' %}
+        
+        {% block body %}
+        
+        <h2>{{ the_title }}</h2>
+
+        <p>Вы ввели следующие данные:</p>
+        <table>
+        <tr><td>Слово:</td><td>{{ the_phrase }}</td></tr>
+        <tr><td>Буквы:</td><td>{{ the_letters }}</td></tr>
+        </table>
+        
+        <p>В "{{the_phrase }}" ищем буквы  "{{ the_letters }}" и находим результат
+        :<p/>
+        <h3>{{ the_results }}</h3>
+
+        {% endblock %}
+
+    </body>
+</html>
+
+
+
+
+
+
+
+
+
+

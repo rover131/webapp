@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request,escape
 import sys
-sys.path.append(r"C:\python\project\mymodul")
+sys.path.append(r"C:\python\appweb\module")
 from vsearch import searchlet
 from DBcm import UseDatabase
 

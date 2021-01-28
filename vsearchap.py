@@ -40,7 +40,7 @@ def do_search() -> 'html':
                            the_title=title,
                            the_phrase=phrase,
                            the_letters=letters,
-                           the_results=results)
+                           the_results=results,)
 
 @app.route('/viewlog')
 def view_the_log() -> 'html':

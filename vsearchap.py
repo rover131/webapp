@@ -1,8 +1,9 @@
-from flask import Flask, render_template, request,escape
+from flask import Flask, render_template, request, escape, session
 import sys
 sys.path.append(r"C:\python\appweb\module")
 from vsearch import searchlet
 from DBcm import UseDatabase
+from checker import check_logged_in
 
 app = Flask(__name__)
 app.config['dbconfig'] = {'host': '127.0.0.1',
@@ -34,7 +35,7 @@ def do_search() -> 'html':
     phrase = request.form['phrase']
     letters = request.form['letters']
     title = 'Результаты:'
-    results=str(searchlet(phrase, letters))
+    results = str(searchlet(phrase, letters))
     log_request(request, results)
     return render_template('results.html',
                            the_title=title,
@@ -43,6 +44,7 @@ def do_search() -> 'html':
                            the_results=results,)
 
 @app.route('/viewlog')
+@check_logged_in
 def view_the_log() -> 'html':
     with UseDatabase (app.config['dbconfig']) as cursor:
         _SQL = """select phrase, letters, ip, browser_string, results from log"""
@@ -53,5 +55,17 @@ def view_the_log() -> 'html':
                             the_title='База данных',
                             the_row_titles=titles,
                             the_data=contens,)
+
+@app.route('/login')
+def do_login():
+    session['logged_in'] = True
+    return 'You are logged in'
+
+@app.route('/logout')
+def do_logout():
+    session.pop('logged_in')
+    return 'You are logged out'
+
+app.secret_key = 'password'
 if __name__ == '__main__':
     app.run(debug=True)

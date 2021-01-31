@@ -3,7 +3,7 @@ from flask import Flask, render_template, request, escape, session
 import sys
 sys.path.append(r"C:\python\appweb\module")
 from vsearch import searchlet
-from DBcm import UseDatabase, ConnectionError, CredentialsError
+from DBcm import UseDatabase, ConnectionError, CredentialsError, SQLError
 from checker import check_logged_in
 
 app = Flask(__name__)
@@ -41,7 +41,7 @@ def do_search() -> 'html':
     try:
         log_request(request, results)
     except Exception as err:
-        print('Ощибка подключения БД ',str(err))
+        print('Ошибка подключения БД ',str(err))
     return render_template('results.html',
                            the_title=title,
                            the_phrase=phrase,
@@ -60,11 +60,16 @@ def view_the_log() -> 'html':
         return render_template('viewlog.html',
                                 the_title='База данных',
                                 the_row_titles=titles,
-                                the_data=contens,)
+                                the_data=contens)
     except ConnectionError as err:
         print('ошибка конектора БД, ошибка:', str(err))
     except CredentialsError as err:
         print('ошибка имени пользователя или пароля, ошибка:   ', str(err))
+    except SQLError as err:
+        print('БД недоступна ', str(err))
+    except Exception as err:
+        print('Что-то случилось ', str(err))
+    return 'Error'
 
 @app.route('/login')
 def do_login():

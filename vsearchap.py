@@ -1,8 +1,9 @@
 from flask import Flask, render_template, request, escape, session
+#from time import sleep
 import sys
 sys.path.append(r"C:\python\appweb\module")
 from vsearch import searchlet
-from DBcm import UseDatabase
+from DBcm import UseDatabase, ConnectionError, CredentialsError
 from checker import check_logged_in
 
 app = Flask(__name__)
@@ -12,6 +13,7 @@ app.config['dbconfig'] = {'host': '127.0.0.1',
                           'database': 'vsearchlogDB', }
 
 def log_request(req: 'flask_request',res: str) -> None:
+    #sleep(15)
     with UseDatabase(app.config['dbconfig']) as cursor:
         _SQL = """insert into log
                       (phrase, letters, ip, browser_string, results)
@@ -36,7 +38,10 @@ def do_search() -> 'html':
     letters = request.form['letters']
     title = 'Результаты:'
     results = str(searchlet(phrase, letters))
-    log_request(request, results)
+    try:
+        log_request(request, results)
+    except Exception as err:
+        print('Ощибка подключения БД ',str(err))
     return render_template('results.html',
                            the_title=title,
                            the_phrase=phrase,
@@ -46,15 +51,20 @@ def do_search() -> 'html':
 @app.route('/viewlog')
 @check_logged_in
 def view_the_log() -> 'html':
-    with UseDatabase (app.config['dbconfig']) as cursor:
-        _SQL = """select phrase, letters, ip, browser_string, results from log"""
-        cursor.execute(_SQL)
-        contens = cursor.fetchall()
-    titles=('В этом слове','Ищем эти буквы','Адрес','Кто и с чего','Результат')
-    return render_template('viewlog.html',
-                            the_title='База данных',
-                            the_row_titles=titles,
-                            the_data=contens,)
+    try:
+        with UseDatabase (app.config['dbconfig']) as cursor:
+            _SQL = """select phrase, letters, ip, browser_string, results from log"""
+            cursor.execute(_SQL)
+            contens = cursor.fetchall()
+        titles=('В этом слове','Ищем эти буквы','Адрес','Кто и с чего','Результат')
+        return render_template('viewlog.html',
+                                the_title='База данных',
+                                the_row_titles=titles,
+                                the_data=contens,)
+    except ConnectionError as err:
+        print('ошибка конектора БД, ошибка:', str(err))
+    except CredentialsError as err:
+        print('ошибка имени пользователя или пароля, ошибка:   ', str(err))
 
 @app.route('/login')
 def do_login():
